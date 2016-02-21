@@ -4,7 +4,7 @@ import functools
 from fuzzywuzzy import process
 
 
-from onepassword.encryption_key import EncryptionKey
+from encryption_key import EncryptionKey
 
 class Keychain(object):
     def __init__(self, path):
