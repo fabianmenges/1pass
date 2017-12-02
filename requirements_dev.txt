@@ -1,5 +1,6 @@
 mock
 nose
 fuzzywuzzy
+python-Levenshtein
 pycrypto
 pbkdf2
