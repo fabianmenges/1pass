@@ -20,7 +20,7 @@ class Keychain(object):
         return result
 
     def get_items(self):
-        return self._items.keys()
+        return sorted(self._items.keys())
 
     def item(self, name, fuzzy_threshold=100):
         """
@@ -118,7 +118,7 @@ class KeychainItem(object):
         )
         encrypted_json = self._lazily_load("_encrypted_json")
         decrypted_json = key.decrypt(self._encrypted_json)
-        self._data = json.loads(decrypted_json)
+        self._data = json.loads(decrypted_json.strip('\x10'))
         self.password = self._find_password()
         self.username = self._find_username()
 
@@ -161,7 +161,7 @@ class WebFormKeychainItem(KeychainItem):
 
 class PasswordKeychainItem(KeychainItem):
     def _find_password(self):
-        return self._data["password"]
+        return self._data.get("password")
 
     def _find_username(self):
-        return self._data["username"]
+        return self._data.get("username")
