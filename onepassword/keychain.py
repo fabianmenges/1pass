@@ -1,7 +1,8 @@
 import json
 import os
 from fuzzywuzzy import process
-
+import time
+import uuid
 
 from encryption_key import EncryptionKey
 
@@ -122,6 +123,13 @@ class KeychainItem(object):
         self.password = self._find_password()
         self.username = self._find_username()
 
+    def encrypt_with(self, keychain):
+        key = keychain.key(
+            identifier=self.key_identifier,
+            security_level=self.security_level,
+        )
+        slef._encrypted_json = key.encrypt(json.dumps(self._data))
+        
     def _find_password(self):
         raise Exception("Cannot extract a password from this type of"
                         " keychain item (%s)" % self._type)
@@ -144,7 +152,28 @@ class KeychainItem(object):
         self._key_identifier = item_data.get("keyID")
         self._security_level = item_data.get("securityLevel")
         self._encrypted_json = item_data["encrypted"]
+        
+    def _write_data_file(self):
+        filename = "%s.1password" % self.identifier
+        path = os.path.join(self._path, "data", "default", filename)
+        timestamp = int(time.time())
+        uuid = str(uuid.uuid1().hex).upper()
+        item_data = {
+          "encrypted": self._encrypted_json,
+          "createdAt": int(time.time()),
+          "location": "https://www.protectmyid.com",
+          "locationKey": "protectmyid.com",
+          "securityLevel": "SL5",
+          "title": "Experian",
+          "txTimestamp": timestamp,
+          "typeName": "webforms.WebForm",
+          "updatedAt": timestamp,
+          "uuid": uuid
+        } 
+        with open(path, 'w') as f:
+            json.dump(item_data, f)
 
+        
 class WebFormKeychainItem(KeychainItem):
     def _find_password(self):
         for field in self._data["fields"]:

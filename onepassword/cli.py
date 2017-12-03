@@ -1,5 +1,6 @@
 import argparse
 import getpass
+import json
 import os
 import sys
 
@@ -39,16 +40,7 @@ class CLI(object):
 
         if item is not None:
             if self.arguments.all:
-                for d in item._data:
-                    self.stdout.write("%s\n"%d)
-                    if d == 'fields':
-                        for i in item._data[d]:
-                            self.stdout.write("\t%s: %s\n"%(i['name'], i['value']))
-                    elif d == 'URLs':
-                        for i in item._data[d]:
-                            self.stdout.write("\t%s\n"%(i['url']))
-                    else:
-                        self.stdout.write("\t%s\n" % item._data[d])
+                print(json.dumps(item._data, sort_keys=True, indent=4))
             elif self.arguments.username:
                 self.stdout.write("%s %s\n" % (item.username, item.password))
             else:

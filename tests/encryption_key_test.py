@@ -52,6 +52,14 @@ class EncryptionKeyTest(TestCase):
         unlock_result = key.unlock(password="not right")
 
         self.assertFalse(unlock_result)
+        
+    def test_encrypt_decrypt(self):
+        key = EncryptionKey(**self.example_data)
+        unlock_result = key.unlock(password="badger")
+        encrypted = key.encrypt("BOOM")
+        decrypted = key.decrypt(encrypted)
+        self.assertEquals("GYNY4xzuiQ6IcmTz82pwOw==", encrypted)
+        self.assertEquals("BOOM", decrypted)
 
     @property
     def example_data(self):

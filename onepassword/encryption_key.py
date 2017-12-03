@@ -1,4 +1,4 @@
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from hashlib import md5
 from M2Crypto import EVP
 
@@ -14,7 +14,10 @@ class SaltyString(object):
         else:
             self.salt = self.ZERO_INIT_VECTOR
             self.data = decoded_data
-
+    
+    @classmethod
+    def salt(cls, data):
+        return b64encode(data)
 
 class EncryptionKey(object):
     MINIMUM_ITERATIONS = 1000
@@ -42,6 +45,10 @@ class EncryptionKey(object):
         encrypted = SaltyString(b64_data)
         key, iv = self._derive_openssl(self._decrypted_key, encrypted.salt)
         return self._aes_decrypt(key=key, iv=iv, encrypted_data=encrypted.data)
+    
+    def encrypt(self, data):
+        key, iv = self._derive_openssl(self._decrypted_key, SaltyString.ZERO_INIT_VECTOR)
+        return SaltyString.salt(self._aes_encrypt(key=key, iv=iv, data=data))
 
     def _set_iterations(self, iterations):
         self.iterations = max(int(iterations), self.MINIMUM_ITERATIONS)
@@ -52,6 +59,11 @@ class EncryptionKey(object):
     def _aes_decrypt(self, key, iv, encrypted_data):
         aes = EVP.Cipher("aes_128_cbc", key, iv, key_as_bytes=False, padding=False, op=0)
         return self._strip_padding(aes.update(encrypted_data) + aes.final())
+
+    def _aes_encrypt(self, key, iv, data):
+        aes = EVP.Cipher("aes_128_cbc", key, iv, key_as_bytes=False, padding=True, op=1)
+        return aes.update(data) + aes.final()
+
 
     def _strip_padding(self, decrypted):
         padding_size = ord(decrypted[-1])
